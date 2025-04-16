@@ -37,9 +37,24 @@
                                 <label for="sbom-file">Select SBOM File (JSON)</label>
                                 <input type="file" class="form-control-file" id="sbom-file" accept=".json">
                             </div>
-                            <button type="submit" class="btn btn-primary">Upload & Visualize</button>
+                            <div class="form-group">
+                                <label for="sbom-name">SBOM Name (optional)</label>
+                                <input type="text" class="form-control" id="sbom-name" placeholder="Enter a name for this SBOM">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Upload & Add to Visualization</button>
                         </form>
                         <div id="upload-status" class="mt-2"></div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5>Loaded SBOMs</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="sbom-list" class="list-group">
+                            <div class="text-muted" id="no-sboms-message">No SBOMs loaded yet</div>
+                        </div>
                     </div>
                 </div>
 
@@ -67,7 +82,17 @@
                                 <option value="fixed">Fixed Size</option>
                                 <option value="connections">Number of Connections</option>
                                 <option value="file-size">File Size</option>
+                                <option value="shared">Shared Across SBOMs</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Show Common Dependencies</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="highlight-common" checked>
+                                <label class="form-check-label" for="highlight-common">
+                                    Highlight shared components
+                                </label>
+                            </div>
                         </div>
                         <button id="reset-zoom" class="btn btn-secondary">Reset View</button>
                     </div>
@@ -90,6 +115,7 @@
                         <div>
                             <span class="badge badge-info" id="stats-nodes">0 Nodes</span>
                             <span class="badge badge-info" id="stats-links">0 Links</span>
+                            <span class="badge badge-success" id="stats-sboms">0 SBOMs</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -116,7 +142,9 @@
                     
                     <h4>How to Use</h4>
                     <ol>
-                        <li>Upload an SBOM JSON file using the form on the left.</li>
+                        <li>Upload one or more SBOM JSON files using the form on the left.</li>
+                        <li>Each uploaded SBOM will be added to the visualization with a different color.</li>
+                        <li>Components that appear in multiple SBOMs are highlighted and can be sized larger.</li>
                         <li>Explore the generated dependency graph:
                             <ul>
                                 <li><strong>Zoom:</strong> Use mouse wheel or pinch gesture.</li>

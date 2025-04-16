@@ -18,7 +18,24 @@ class SbomGraph {
         this.zoom = null;
         this.selectedNode = null;
         
-        this.nodeSizeBy = 'fixed'; // Options: 'fixed', 'connections', 'file-size'
+        this.nodeSizeBy = 'fixed'; // Options: 'fixed', 'connections', 'file-size', 'shared'
+        this.highlightCommon = true; // Whether to highlight components shared across SBOMs
+        this.sbomColors = {}; // Map SBOM IDs to colors
+        this.visibleSboms = new Set(); // Track which SBOMs are visible
+        
+        // Color palette for different SBOMs
+        this.colorPalette = [
+            '#4285F4', // Google Blue
+            '#EA4335', // Google Red
+            '#FBBC05', // Google Yellow
+            '#34A853', // Google Green
+            '#8F00FF', // Violet
+            '#00FFFF', // Cyan
+            '#FF00FF', // Magenta
+            '#FF8C00', // Dark Orange
+            '#008080', // Teal
+            '#800080'  // Purple
+        ];
         
         this._initialize();
     }
@@ -69,6 +86,39 @@ class SbomGraph {
         this.update();
     }
 
+    setHighlightCommon(highlight) {
+        this.highlightCommon = highlight;
+        this.update();
+    }
+
+    toggleSbomVisibility(sbomId, visible) {
+        if (visible) {
+            this.visibleSboms.add(sbomId);
+        } else {
+            this.visibleSboms.delete(sbomId);
+        }
+        this.filterVisibleSboms();
+    }
+
+    filterVisibleSboms() {
+        // If no SBOMs are explicitly set as visible, show all
+        const showAll = this.visibleSboms.size === 0;
+        
+        // Filter nodes and links based on SBOM visibility
+        this.nodeElements.style("display", d => {
+            // For nodes in multiple SBOMs, check if any of those SBOMs are visible
+            if (d.shared_in) {
+                const visibleInAnySbom = d.shared_in.some(id => showAll || this.visibleSboms.has(id));
+                return visibleInAnySbom ? null : 'none';
+            }
+            return (showAll || this.visibleSboms.has(d.sbom_id)) ? null : 'none';
+        });
+        
+        this.linkElements.style("display", d => {
+            return (showAll || this.visibleSboms.has(d.sbom_id)) ? null : 'none';
+        });
+    }
+
     getNodeSize(d) {
         const baseSize = 8;
         const maxSize = 30;
@@ -86,6 +136,11 @@ class SbomGraph {
                 if (!d.size) return baseSize;
                 const scaleFactor = 0.0001; // Adjust based on expected size range
                 return Math.max(baseSize, Math.min(baseSize + d.size * scaleFactor, maxSize));
+                
+            case 'shared':
+                // Scale based on how many SBOMs share this component
+                if (!d.shared_in) return baseSize;
+                return Math.max(baseSize, Math.min(baseSize + (d.shared_in.length * 5), maxSize));
                 
             default: // 'fixed'
                 return baseSize;
@@ -107,9 +162,26 @@ class SbomGraph {
         this.nodes = data.nodes;
         this.links = data.links;
         
+        // Assign colors to SBOMs if needed
+        const sbomIds = new Set();
+        this.nodes.forEach(node => {
+            if (node.sbom_id && !sbomIds.has(node.sbom_id)) {
+                sbomIds.add(node.sbom_id);
+                if (!this.sbomColors[node.sbom_id]) {
+                    // Assign color from palette or generate one
+                    const colorIndex = Object.keys(this.sbomColors).length % this.colorPalette.length;
+                    this.sbomColors[node.sbom_id] = this.colorPalette[colorIndex];
+                }
+                
+                // Add to visible SBOMs by default
+                this.visibleSboms.add(node.sbom_id);
+            }
+        });
+        
         // Update counts in UI
         d3.select('#stats-nodes').text(`${this.nodes.length} Nodes`);
         d3.select('#stats-links').text(`${this.links.length} Links`);
+        d3.select('#stats-sboms').text(`${sbomIds.size} SBOMs`);
         
         this.update();
     }
@@ -125,7 +197,8 @@ class SbomGraph {
             .data(this.links)
             .enter().append("line")
             .attr("class", "link")
-            .attr("stroke-width", 1);
+            .attr("stroke-width", 1)
+            .style("stroke", d => this.sbomColors[d.sbom_id] || "#999");
             
         // Add nodes
         this.nodeElements = this.graphGroup.append("g")
@@ -133,7 +206,13 @@ class SbomGraph {
             .selectAll(".node")
             .data(this.nodes)
             .enter().append("g")
-            .attr("class", "node")
+            .attr("class", d => {
+                const classes = ["node"];
+                if (d.shared_in && d.shared_in.length > 1 && this.highlightCommon) {
+                    classes.push("shared-node");
+                }
+                return classes.join(" ");
+            })
             .on("mouseover", (event, d) => this._showTooltip(event, d))
             .on("mouseout", () => this._hideTooltip())
             .on("click", (event, d) => this._selectNode(event, d))
@@ -145,7 +224,19 @@ class SbomGraph {
         // Add circles for nodes
         this.nodeElements.append("circle")
             .attr("r", d => this.getNodeSize(d))
-            .attr("fill", d => this._getNodeColor(d));
+            .attr("fill", d => this._getNodeColor(d))
+            .attr("stroke", d => {
+                if (d.shared_in && d.shared_in.length > 1 && this.highlightCommon) {
+                    return "#FF0000"; // Red border for shared components
+                }
+                return "#FFF";
+            })
+            .attr("stroke-width", d => {
+                if (d.shared_in && d.shared_in.length > 1 && this.highlightCommon) {
+                    return 2;
+                }
+                return 1.5;
+            });
             
         // Add node labels
         this.nodeElements.append("text")
@@ -153,6 +244,9 @@ class SbomGraph {
             .attr("dy", ".35em")
             .text(d => d.name ? (d.name.length > 20 ? d.name.substring(0, 17) + "..." : d.name) : "Unknown");
             
+        // Apply initial filters
+        this.filterVisibleSboms();
+        
         // Update simulation
         this.simulation
             .nodes(this.nodes)
@@ -187,12 +281,22 @@ class SbomGraph {
     filterByType(showSoftware) {
         // Filter nodes by type
         this.nodeElements.style("display", d => {
+            // First check if node should be visible based on SBOM visibility
+            const sbomVisible = this.visibleSboms.size === 0 || 
+                (d.shared_in ? d.shared_in.some(id => this.visibleSboms.has(id)) : this.visibleSboms.has(d.sbom_id));
+                
+            if (!sbomVisible) return 'none';
+            
             if (!showSoftware && d.type === 'software') return 'none';
             return null;
         });
         
         // Update links accordingly
         this.linkElements.style("display", d => {
+            // First check if link should be visible based on SBOM visibility
+            const sbomVisible = this.visibleSboms.size === 0 || this.visibleSboms.has(d.sbom_id);
+            if (!sbomVisible) return 'none';
+            
             const sourceVisible = showSoftware || d.source.type !== 'software';
             const targetVisible = showSoftware || d.target.type !== 'software';
             
@@ -231,6 +335,14 @@ class SbomGraph {
         if (d.fileName) html += `<p><strong>Filename:</strong> ${d.fileName}</p>`;
         if (d.size) html += `<p><strong>Size:</strong> ${this._formatFileSize(d.size)}</p>`;
         
+        // Show which SBOM this node is from
+        html += `<p><strong>SBOM:</strong> ${d.sbom_name}</p>`;
+        
+        // If shared across multiple SBOMs, show which ones
+        if (d.shared_in && d.shared_in.length > 1) {
+            html += `<p><strong>Shared across:</strong> ${d.shared_in.length} SBOMs</p>`;
+        }
+        
         // Count dependencies
         const sourceCount = this.links.filter(link => link.source.id === d.id).length;
         const targetCount = this.links.filter(link => link.target.id === d.id).length;
@@ -254,11 +366,19 @@ class SbomGraph {
             .duration(200)
             .style("opacity", .9);
             
-        this.tooltip.html(`
+        let tooltipContent = `
             <strong>${d.name || 'Unknown'}</strong><br/>
             ${d.version ? `Version: ${d.version}<br/>` : ''}
             ${d.vendor ? `Vendor: ${d.vendor}<br/>` : ''}
-        `)
+            SBOM: ${d.sbom_name}<br/>
+        `;
+        
+        // Add info about sharing if relevant
+        if (d.shared_in && d.shared_in.length > 1) {
+            tooltipContent += `<strong>Shared across ${d.shared_in.length} SBOMs</strong><br/>`;
+        }
+        
+        this.tooltip.html(tooltipContent)
             .style("left", (event.pageX + 10) + "px")
             .style("top", (event.pageY - 28) + "px");
     }
@@ -270,13 +390,18 @@ class SbomGraph {
     }
 
     _getNodeColor(d) {
-        // Assign colors based on node type
-        switch(d.type) {
-            case 'software':
-                return '#4285F4'; // Google Blue
-            default:
-                return '#EA4335'; // Google Red
+        // For nodes that appear in multiple SBOMs
+        if (d.shared_in && d.shared_in.length > 1) {
+            if (this.highlightCommon) {
+                // Use a gradient or special color for shared components
+                return '#FF9900'; // Orange for shared components
+            }
+            // Otherwise use the color of the first SBOM it appears in
+            return this.sbomColors[d.shared_in[0]] || '#4285F4';
         }
+        
+        // Regular nodes get their SBOM's color
+        return this.sbomColors[d.sbom_id] || '#4285F4';
     }
 
     _ticked() {

@@ -45,6 +45,16 @@ body {
     stroke-width: 2px;
 }
 
+/* Style for nodes shared across multiple SBOMs */
+.shared-node circle {
+    stroke: #ff0000;
+    stroke-width: 2px;
+}
+
+.shared-node text {
+    font-weight: bold;
+}
+
 .tooltip {
     position: absolute;
     text-align: center;
@@ -59,4 +69,54 @@ body {
 
 .search-result {
     background-color: #fff3cd;
+}
+
+/* SBOM list styling */
+#sbom-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.sbom-visibility:checked + label::before {
+    background-color: #4285F4;
+}
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    color: #fff;
+    border-color: #4285F4;
+    background-color: #4285F4;
+}
+
+/* SBOM color indicators */
+.sbom-color-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+/* Legend for shared components */
+.legend-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 8px;
 } 
