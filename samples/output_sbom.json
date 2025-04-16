@@ -1,0 +1,451 @@
+{
+  "systems": [],
+  "hardware": [],
+  "software": [
+    {
+      "UUID": "0bbe8a0c-0ac9-4e7a-8221-ef844fec486a",
+      "name": null,
+      "size": 68,
+      "fileName": [
+        "code-metadata.json"
+      ],
+      "installPath": [
+        "/code-metadata.json"
+      ],
+      "containerPath": [],
+      "captureTime": 1744774970,
+      "version": "",
+      "vendor": [],
+      "description": "",
+      "sha1": "5fe0c722d2f6dc527fff242eb2a40e6b926e43df",
+      "sha256": "b5fba907dc9d798e6a51b2d66ed75b4108efac354a9f7f96cd706c1c40c50f6b",
+      "md5": "55802214ea5271093e7b86a1a827dda9",
+      "relationshipAssertion": "Unknown",
+      "comments": "",
+      "metadata": [
+        {
+          "collectedBy": "Surfactant",
+          "collectionPlatform": "Windows-11-10.0.26100-SP0",
+          "fileInfo": {
+            "mode": "-rw-rw-rw-",
+            "hidden": false
+          }
+        }
+      ],
+      "supplementaryFiles": [],
+      "provenance": null,
+      "recordedInstitution": null,
+      "components": []
+    },
+    {
+      "UUID": "4ee0196b-cbb5-45b5-97dd-4f4a0a4eb471",
+      "name": null,
+      "size": 101,
+      "fileName": [
+        "compat-version-metadata.json"
+      ],
+      "installPath": [
+        "/compat-version-metadata.json"
+      ],
+      "containerPath": [],
+      "captureTime": 1744774970,
+      "version": "",
+      "vendor": [],
+      "description": "",
+      "sha1": "ea0753424d96181321b295544d4d651cf1b2df18",
+      "sha256": "a39fee19cc0da0e2d1ac495dfb3e1f311eb13d38df088eee1631007f0c188a8d",
+      "md5": "5d1b61ba2a072fbe64df291919d1341b",
+      "relationshipAssertion": "Unknown",
+      "comments": "",
+      "metadata": [
+        {
+          "collectedBy": "Surfactant",
+          "collectionPlatform": "Windows-11-10.0.26100-SP0",
+          "fileInfo": {
+            "mode": "-rw-rw-rw-",
+            "hidden": false
+          }
+        }
+      ],
+      "supplementaryFiles": [],
+      "provenance": null,
+      "recordedInstitution": null,
+      "components": []
+    },
+    {
+      "UUID": "32b8da69-57d1-4af5-8cd2-fa02e7e35801",
+      "name": null,
+      "size": 72,
+      "fileName": [
+        "content-metadata.json"
+      ],
+      "installPath": [
+        "/content-metadata.json"
+      ],
+      "containerPath": [],
+      "captureTime": 1744774970,
+      "version": "",
+      "vendor": [],
+      "description": "",
+      "sha1": "224207b137479ef55bd31155567493053736cef7",
+      "sha256": "2ba52ca7c58d7c447d752fbe6836f6c0d1823f0a53af47e848093c60c8a8abd4",
+      "md5": "279f413bc15b75f5d993c0a10c9f974d",
+      "relationshipAssertion": "Unknown",
+      "comments": "",
+      "metadata": [
+        {
+          "collectedBy": "Surfactant",
+          "collectionPlatform": "Windows-11-10.0.26100-SP0",
+          "fileInfo": {
+            "mode": "-rw-rw-rw-",
+            "hidden": false
+          }
+        }
+      ],
+      "supplementaryFiles": [],
+      "provenance": null,
+      "recordedInstitution": null,
+      "components": []
+    },
+    {
+      "UUID": "cb5b59a6-2e17-408c-be5f-9f90dbf1a51f",
+      "name": "Microsoft\u00ae Windows\u00ae Operating System",
+      "size": 4481992,
+      "fileName": [
+        "D3DCompiler_47.dll"
+      ],
+      "installPath": [
+        "/D3DCompiler_47.dll"
+      ],
+      "containerPath": [],
+      "captureTime": 1744774970,
+      "version": "10.0.18362.1 (WinBuild.160101.0800)",
+      "vendor": [
+        [
+          "Microsoft Corporation"
+        ]
+      ],
+      "description": "Direct3D HLSL Compiler for Redistribution",
+      "sha1": "621fa52fb488271c25c10c646d67e7ce5f42d4f8",
+      "sha256": "4b074a3976399dc735484f5d43d04b519b7bdee8ac719d9ab8ed6bd4e6be0345",
+      "md5": "fea40e5b591127ae3b065389d058a445",
+      "relationshipAssertion": "Unknown",
+      "comments": "",
+      "metadata": [
+        {
+          "collectedBy": "Surfactant",
+          "collectionPlatform": "Windows-11-10.0.26100-SP0",
+          "fileInfo": {
+            "mode": "-rw-rw-rw-",
+            "hidden": false
+          }
+        },
+        {
+          "OS": "Windows",
+          "peMachine": "AMD64",
+          "peOperatingSystemVersion": "10.0",
+          "peSubsystemVersion": "6.0",
+          "peSubsystem": "WINDOWS_CUI",
+          "peLinkerVersion": "14.15",
+          "peImport": [
+            "api-ms-win-crt-string-l1-1-0.dll",
+            "api-ms-win-crt-math-l1-1-0.dll",
+            "api-ms-win-crt-runtime-l1-1-0.dll",
+            "api-ms-win-crt-private-l1-1-0.dll",
+            "KERNEL32.dll",
+            "ADVAPI32.dll",
+            "api-ms-win-crt-time-l1-1-0.dll",
+            "RPCRT4.dll"
+          ],
+          "peIsExe": false,
+          "peIsDll": true,
+          "peIsClr": false,
+          "FileInfo": {
+            "CompanyName": "Microsoft Corporation",
+            "FileDescription": "Direct3D HLSL Compiler for Redistribution",
+            "FileVersion": "10.0.18362.1 (WinBuild.160101.0800)",
+            "InternalName": "d3dcompiler_47.dll",
+            "LegalCopyright": "\u00a9 Microsoft Corporation. All rights reserved.",
+            "OriginalFilename": "d3dcompiler_47.dll",
+            "ProductName": "Microsoft\u00ae Windows\u00ae Operating System",
+            "ProductVersion": "10.0.18362.1"
+          },
+          "dllRedirectionLocal": false
+        }
+      ],
+      "supplementaryFiles": [],
+      "provenance": null,
+      "recordedInstitution": null,
+      "components": []
+    },
+    {
+      "UUID": "620812d1-5790-43eb-b014-c8cbe8a65a7a",
+      "name": "League of Legends (TM) Client",
+      "size": 30325120,
+      "fileName": [
+        "League of Legends.exe"
+      ],
+      "installPath": [
+        "/League of Legends.exe"
+      ],
+      "containerPath": [],
+      "captureTime": 1744774971,
+      "version": "15.7.672.4034",
+      "vendor": [
+        [
+          "Riot Games, Inc."
+        ]
+      ],
+      "description": "League of Legends (TM) Client",
+      "sha1": "edb2e2b7e3dc73cdf592b1bc59ee75c2e12d26ff",
+      "sha256": "b343c23c419a8fa5db34ddfc52d7bb55e5fdeb346b716eaccf08995ff6ac4bd5",
+      "md5": "5f15262233b7a92f053c278b0d7b62a3",
+      "relationshipAssertion": "Unknown",
+      "comments": "",
+      "metadata": [
+        {
+          "collectedBy": "Surfactant",
+          "collectionPlatform": "Windows-11-10.0.26100-SP0",
+          "fileInfo": {
+            "mode": "-rwxrwxrwx",
+            "hidden": false
+          }
+        },
+        {
+          "OS": "Windows",
+          "peMachine": "AMD64",
+          "peOperatingSystemVersion": "6.1",
+          "peSubsystemVersion": "6.1",
+          "peSubsystem": "WINDOWS_GUI",
+          "peLinkerVersion": "14.40",
+          "peImport": [
+            "stub.dll"
+          ],
+          "peIsExe": true,
+          "peIsDll": false,
+          "peIsClr": false,
+          "FileInfo": {
+            "FileDescription": "League of Legends (TM) Client",
+            "FileVersion": "15.7.672.4034",
+            "InternalName": "League of Legends (TM) Client",
+            "LegalCopyright": "Copyright (C) 2009",
+            "OriginalFilename": "League of Legends.exe",
+            "ProductName": "League of Legends (TM) Client",
+            "ProductVersion": "15.7.672.4034",
+            "BuildType": "Public-Game",
+            "CompanyName": "Riot Games, Inc."
+          },
+          "dllRedirectionLocal": false
+        }
+      ],
+      "supplementaryFiles": [],
+      "provenance": null,
+      "recordedInstitution": null,
+      "components": []
+    },
+    {
+      "UUID": "f5981f2f-75ef-45d6-b4f5-11e9fbc74f7b",
+      "name": null,
+      "size": 882560,
+      "fileName": [
+        "LeagueCrashHandler64.exe"
+      ],
+      "installPath": [
+        "/LeagueCrashHandler64.exe"
+      ],
+      "containerPath": [],
+      "captureTime": 1744774974,
+      "version": "",
+      "vendor": [],
+      "description": "",
+      "sha1": "7f733c9fc4d3e1d8603db60810a43a8ebf7f7d02",
+      "sha256": "08cbc6dabb4934b45ee224f97a55b21122553c668cfd818c76cf4f66fe48be54",
+      "md5": "5ad24234440ad4e7468db711e052e33e",
+      "relationshipAssertion": "Unknown",
+      "comments": "",
+      "metadata": [
+        {
+          "collectedBy": "Surfactant",
+          "collectionPlatform": "Windows-11-10.0.26100-SP0",
+          "fileInfo": {
+            "mode": "-rwxrwxrwx",
+            "hidden": false
+          }
+        },
+        {
+          "OS": "Windows",
+          "peMachine": "AMD64",
+          "peOperatingSystemVersion": "6.0",
+          "peSubsystemVersion": "6.0",
+          "peSubsystem": "WINDOWS_GUI",
+          "peLinkerVersion": "14.39",
+          "peImport": [
+            "POWRPROF.dll",
+            "USER32.dll",
+            "VERSION.dll",
+            "WINHTTP.dll",
+            "ADVAPI32.dll",
+            "KERNEL32.dll"
+          ],
+          "peIsExe": true,
+          "peIsDll": false,
+          "peIsClr": false,
+          "dllRedirectionLocal": false
+        }
+      ],
+      "supplementaryFiles": [],
+      "provenance": null,
+      "recordedInstitution": null,
+      "components": []
+    },
+    {
+      "UUID": "2860b242-924f-4b3b-a0c5-3fd5b839d185",
+      "name": "Riot Games API",
+      "size": 30606208,
+      "fileName": [
+        "RiotGamesApi.dll"
+      ],
+      "installPath": [
+        "/RiotGamesApi.dll"
+      ],
+      "containerPath": [],
+      "captureTime": 1744774974,
+      "version": "24.11.1.4741",
+      "vendor": [
+        [
+          "Riot Games, Inc."
+        ]
+      ],
+      "description": "RiotGamesApi",
+      "sha1": "9542134b57ff4488abba41429353c7b1026ada11",
+      "sha256": "5ff47ce566fc49f77e53cfe9b3c7bdf8ccbda1ab87d8006f12173d044acff8fd",
+      "md5": "a3084622c3e66a4095a4298557557697",
+      "relationshipAssertion": "Unknown",
+      "comments": "",
+      "metadata": [
+        {
+          "collectedBy": "Surfactant",
+          "collectionPlatform": "Windows-11-10.0.26100-SP0",
+          "fileInfo": {
+            "mode": "-rw-rw-rw-",
+            "hidden": false
+          }
+        },
+        {
+          "OS": "Windows",
+          "peMachine": "AMD64",
+          "peOperatingSystemVersion": "6.0",
+          "peSubsystemVersion": "6.0",
+          "peSubsystem": "WINDOWS_GUI",
+          "peLinkerVersion": "14.37",
+          "peImport": [
+            "ADVAPI32.dll",
+            "bcrypt.dll",
+            "CRYPT32.dll",
+            "DNSAPI.dll",
+            "DWrite.dll",
+            "GDI32.dll",
+            "IPHLPAPI.DLL",
+            "KERNEL32.dll",
+            "ntdll.dll",
+            "ole32.dll",
+            "OLEAUT32.dll",
+            "PSAPI.DLL",
+            "RPCRT4.dll",
+            "SHELL32.dll",
+            "SHLWAPI.dll",
+            "USER32.dll",
+            "WINHTTP.dll",
+            "WS2_32.dll"
+          ],
+          "peDelayImport": [
+            "ACLSDK.dll",
+            "GCloudVoice.dll"
+          ],
+          "peIsExe": false,
+          "peIsDll": true,
+          "peIsClr": false,
+          "FileInfo": {
+            "FileDescription": "RiotGamesApi",
+            "FileVersion": "24.11.1.4741",
+            "InternalName": "RiotGamesApi",
+            "OriginalFilename": "RiotGamesApi.dll",
+            "ProductName": "Riot Games API",
+            "ProductVersion": "24.11.1.4741",
+            "CompanyName": "Riot Games, Inc.",
+            "LegalCopyright": "(c) 2020 Riot Games, Inc."
+          },
+          "dllRedirectionLocal": false
+        }
+      ],
+      "supplementaryFiles": [],
+      "provenance": null,
+      "recordedInstitution": null,
+      "components": []
+    },
+    {
+      "UUID": "f1dc3484-7402-417a-ae73-0e9a87af03db",
+      "name": null,
+      "size": 22508936,
+      "fileName": [
+        "stub.dll"
+      ],
+      "installPath": [
+        "/stub.dll"
+      ],
+      "containerPath": [],
+      "captureTime": 1744774977,
+      "version": "",
+      "vendor": [],
+      "description": "",
+      "sha1": "96ca2a80cb40ec1c1d2808b256bfb6e75f2ff41e",
+      "sha256": "8f91eab1b5738659dcd9e9d8a58438594a50a59c863b9f2445171f059ecb02b3",
+      "md5": "d5d8e33adcf2a5d9397901e3d9e72cf6",
+      "relationshipAssertion": "Unknown",
+      "comments": "",
+      "metadata": [
+        {
+          "collectedBy": "Surfactant",
+          "collectionPlatform": "Windows-11-10.0.26100-SP0",
+          "fileInfo": {
+            "mode": "-rw-rw-rw-",
+            "hidden": false
+          }
+        },
+        {
+          "OS": "Windows",
+          "peMachine": "AMD64",
+          "peOperatingSystemVersion": "6.0",
+          "peSubsystemVersion": "6.0",
+          "peSubsystem": "WINDOWS_GUI",
+          "peLinkerVersion": "14.27",
+          "peImport": [
+            "dbghelp.dll",
+            "KERNEL32.dll",
+            "USER32.dll",
+            "GDI32.dll",
+            "ole32.dll"
+          ],
+          "peIsExe": false,
+          "peIsDll": true,
+          "peIsClr": false,
+          "dllRedirectionLocal": false
+        }
+      ],
+      "supplementaryFiles": [],
+      "provenance": null,
+      "recordedInstitution": null,
+      "components": []
+    }
+  ],
+  "relationships": [
+    {
+      "xUUID": "620812d1-5790-43eb-b014-c8cbe8a65a7a",
+      "yUUID": "f1dc3484-7402-417a-ae73-0e9a87af03db",
+      "relationship": "Uses"
+    }
+  ],
+  "analysisData": [],
+  "observations": [],
+  "starRelationships": []
+}
