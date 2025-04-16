@@ -72,6 +72,29 @@ body {
     font-weight: bold;
 }
 
+/* Cluster node styling */
+.cluster-node path {
+    stroke: #333;
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3));
+}
+
+.cluster-node.node-selected path {
+    stroke: #000;
+    stroke-width: 3px;
+}
+
+.cluster-node text {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* Cluster link styling */
+.cluster-link {
+    stroke-dasharray: 5,5;
+    opacity: 0.7;
+}
+
 .tooltip {
     position: absolute;
     text-align: center;
@@ -83,6 +106,13 @@ body {
     pointer-events: none;
     max-width: 300px;
     z-index: 1500;
+}
+
+/* Cluster tooltip */
+.tooltip.cluster-tooltip {
+    max-width: 350px;
+    background: #f0f0f0;
+    border: 2px solid #333;
 }
 
 .search-result {

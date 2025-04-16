@@ -34,10 +34,13 @@ class SbomGraph {
         this.zoom = null;
         this.selectedNode = null;
         
+        // Node size and clustering settings
         this.nodeSizeBy = 'fixed'; // Options: 'fixed', 'connections', 'file-size', 'shared'
         this.highlightCommon = true; // Whether to highlight components shared across SBOMs
         this.sbomColors = {}; // Map SBOM IDs to colors
         this.visibleSboms = new Set(); // Track which SBOMs are visible
+        this.clusterThreshold = 30; // Max number of nodes from a single SBOM to display individually
+        this.showClusters = true; // Whether to show clustered nodes
         
         // Color palette for different SBOMs
         this.colorPalette = [
@@ -187,8 +190,16 @@ class SbomGraph {
     }
 
     getNodeSize(d) {
-        const baseSize = 15;
-        const maxSize = 45;
+        // Special handling for cluster nodes
+        if (d.isCluster) {
+            // Scale based on number of components in the cluster
+            const baseClusterSize = 25;
+            const count = d.componentCount || 1;
+            return Math.min(baseClusterSize + Math.sqrt(count) * 2, 60);
+        }
+        
+        const baseSize = 15;  // Increased from 8 to 15
+        const maxSize = 45;   // Increased from 30 to 45
         
         try {
             switch (this.nodeSizeBy) {
@@ -239,6 +250,10 @@ class SbomGraph {
         try {
             this.logger.info(`Updating graph data with ${data.nodes.length} nodes and ${data.links.length} links`);
             
+            // Store original nodes and links
+            this.originalNodes = JSON.parse(JSON.stringify(data.nodes));
+            this.originalLinks = JSON.parse(JSON.stringify(data.links));
+            
             // Validate node data - ensure no duplicate IDs
             const uniqueNodes = {};
             this.nodes = [];
@@ -278,9 +293,13 @@ class SbomGraph {
             
             this.logger.info(`Processed ${this.nodes.length} nodes and ${this.links.length} links for visualization`);
             
+            // Create cluster graph if needed
+            this._createClusteredGraph();
+            
             // Assign colors to SBOMs if needed
             const sbomIds = new Set();
             this.nodes.forEach(node => {
+                // Fix: Use 'sbom' property instead of 'sbom_id'
                 if (node.sbom && !sbomIds.has(node.sbom)) {
                     sbomIds.add(node.sbom);
                     if (!this.sbomColors[node.sbom]) {
@@ -300,8 +319,8 @@ class SbomGraph {
             const statsLinks = document.getElementById('stats-links');
             const statsSboms = document.getElementById('stats-sboms');
             
-            if (statsNodes) statsNodes.textContent = `${this.nodes.length} Nodes`;
-            if (statsLinks) statsLinks.textContent = `${this.links.length} Links`;
+            if (statsNodes) statsNodes.textContent = `${this.originalNodes.length} Nodes (${this.nodes.length} Visible)`;
+            if (statsLinks) statsLinks.textContent = `${this.originalLinks.length} Links (${this.links.length} Visible)`;
             if (statsSboms) statsSboms.textContent = `${sbomIds.size} SBOMs`;
             
             this.update();
@@ -348,9 +367,23 @@ class SbomGraph {
                 .selectAll("line")
                 .data(this.links)
                 .enter().append("line")
-                .attr("class", "link")
-                .attr("stroke-width", 1)
-                .style("stroke", d => this.sbomColors[d.sbom] || "#999");
+                .attr("class", d => {
+                    const classes = ["link"];
+                    // Add special styling for cluster links
+                    if (d.type === 'cluster-to-node' || d.type === 'node-to-cluster') {
+                        classes.push("cluster-link");
+                    }
+                    return classes.join(" ");
+                })
+                .attr("stroke-width", d => {
+                    // Thicker lines for cluster connections
+                    return d.type && d.type.includes('cluster') ? 2 : 1;
+                })
+                .style("stroke", d => this.sbomColors[d.sbom] || "#999")
+                .style("stroke-dasharray", d => {
+                    // Use dashed lines for cluster links
+                    return d.type && d.type.includes('cluster') ? "3,3" : null;
+                });
                 
             // Add nodes
             this.nodeElements = this.graphGroup.append("g")
@@ -363,18 +396,28 @@ class SbomGraph {
                     if (d.shared_in && d.shared_in.length > 1 && this.highlightCommon) {
                         classes.push("shared-node");
                     }
+                    if (d.isCluster) {
+                        classes.push("cluster-node");
+                    }
                     return classes.join(" ");
                 })
                 .on("mouseover", (event, d) => this._showTooltip(event, d))
                 .on("mouseout", () => this._hideTooltip())
                 .on("click", (event, d) => this._selectNode(event, d))
+                .on("dblclick", (event, d) => {
+                    // Special handling for double-clicking cluster nodes
+                    if (d.isCluster) {
+                        this._expandCluster(d);
+                    }
+                })
                 .call(d3.drag()
                     .on("start", (event, d) => this._dragstarted(event, d))
                     .on("drag", (event, d) => this._dragged(event, d))
                     .on("end", (event, d) => this._dragended(event, d)));
-                
-            // Add circles for nodes
-            this.nodeElements.append("circle")
+            
+            // Add standard circles for regular nodes
+            this.nodeElements.filter(d => !d.isCluster)
+                .append("circle")
                 .attr("r", d => this.getNodeSize(d))
                 .attr("fill", d => this._getNodeColor(d))
                 .attr("stroke", d => {
@@ -390,10 +433,56 @@ class SbomGraph {
                     return 1.5;
                 });
                 
+            // Add special hexagon shapes for cluster nodes
+            const clusterNodes = this.nodeElements.filter(d => d.isCluster);
+            
+            // Create hexagon shape for clusters
+            clusterNodes.each(function(d) {
+                const size = d3.select(this).datum().componentCount || 10;
+                const nodeSize = Math.min(25 + Math.sqrt(size) * 2, 60);
+                
+                // Create hexagon path
+                const hexagonPoints = createHexagonPoints(nodeSize);
+                
+                // Add hexagon background
+                d3.select(this).append("path")
+                    .attr("d", hexagonPoints)
+                    .attr("fill", d => d3.color(d3.select(this.parentNode).datum().sbom ? 
+                        this.sbomColors[d3.select(this.parentNode).datum().sbom] : "#999").brighter(0.5))
+                    .attr("stroke", "#333")
+                    .attr("stroke-width", 2);
+                    
+                // Add count text in the middle
+                d3.select(this).append("text")
+                    .attr("text-anchor", "middle")
+                    .attr("dy", ".3em")
+                    .attr("fill", "#000")
+                    .attr("font-weight", "bold")
+                    .text(d.componentCount);
+            }.bind(this));
+            
+            // Helper function to create hexagon points
+            function createHexagonPoints(size) {
+                const points = [];
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i * Math.PI / 3) - (Math.PI / 6);
+                    points.push([size * Math.sin(angle), size * Math.cos(angle)]);
+                }
+                
+                return d3.line()(points) + "Z";
+            }
+                
             // Add node labels
             this.nodeElements.append("text")
-                .attr("dx", d => this.getNodeSize(d) + 5)
-                .attr("dy", ".35em")
+                .attr("dx", d => {
+                    // Position labels differently for clusters vs regular nodes
+                    return d.isCluster ? 0 : this.getNodeSize(d) + 5;
+                })
+                .attr("dy", d => {
+                    // Position cluster labels below the node, regular labels to the right
+                    return d.isCluster ? this.getNodeSize(d) + 15 : ".35em";
+                })
+                .attr("text-anchor", d => d.isCluster ? "middle" : "start")
                 .text(d => {
                     const displayName = d.display_name || d.name || d.id || "Unknown";
                     return displayName.length > 20 ? displayName.substring(0, 17) + "..." : displayName;
@@ -551,6 +640,48 @@ class SbomGraph {
             
             const d = this.selectedNode;
             
+            // Special handling for cluster nodes
+            if (d.isCluster) {
+                let html = `<h6>${d.name}</h6>`;
+                html += `<p><strong>Type:</strong> ${d.clusterType || 'Unknown'}</p>`;
+                html += `<p><strong>Components:</strong> ${d.componentCount}</p>`;
+                
+                if (d.size) {
+                    const formattedSize = this._formatFileSize(d.size);
+                    html += `<p><strong>Total Size:</strong> ${formattedSize}</p>`;
+                }
+                
+                html += `<p><strong>SBOM:</strong> ${d.sbom_name || d.sbom || "Unknown"}</p>`;
+                
+                // Count links
+                const sourceCount = this.links.filter(link => 
+                    link.source === d.id || (typeof link.source === 'object' && link.source?.id === d.id)
+                ).length;
+                
+                const targetCount = this.links.filter(link => 
+                    link.target === d.id || (typeof link.target === 'object' && link.target?.id === d.id)
+                ).length;
+                
+                html += `<p><strong>Outgoing Links:</strong> ${sourceCount}</p>`;
+                html += `<p><strong>Incoming Links:</strong> ${targetCount}</p>`;
+                
+                // Add expand button
+                html += `<button id="expand-cluster-btn" class="btn btn-sm btn-primary mt-2">Expand Cluster</button>`;
+                
+                detailsPanel.innerHTML = html;
+                
+                // Add event listener to expand button
+                const expandBtn = document.getElementById('expand-cluster-btn');
+                if (expandBtn) {
+                    expandBtn.addEventListener('click', () => {
+                        this._expandCluster(d);
+                    });
+                }
+                
+                return;
+            }
+            
+            // Regular node handling
             // Use display_name if available, otherwise fallback to name
             const displayName = d.display_name || d.name || 'Unknown';
             let html = `<h6>${displayName}</h6>`;
@@ -571,7 +702,7 @@ class SbomGraph {
             if (d.type) html += `<p><strong>Type:</strong> ${d.type}</p>`;
             
             // Show which SBOM this node is from
-            html += `<p><strong>SBOM:</strong> ${d.sbom_name || "Unknown"}</p>`;
+            html += `<p><strong>SBOM:</strong> ${d.sbom_name || d.sbom || "Unknown"}</p>`;
             
             // If shared across multiple SBOMs, show which ones
             if (d.shared_in && d.shared_in.length > 1) {
@@ -579,8 +710,15 @@ class SbomGraph {
             }
             
             // Count dependencies
-            const sourceCount = this.links.filter(link => link.source.id === d.id).length;
-            const targetCount = this.links.filter(link => link.target.id === d.id).length;
+            const sourceCount = this.links.filter(link => {
+                const source = typeof link.source === 'object' ? link.source?.id : link.source;
+                return source === d.id;
+            }).length;
+            
+            const targetCount = this.links.filter(link => {
+                const target = typeof link.target === 'object' ? link.target?.id : link.target;
+                return target === d.id;
+            }).length;
             
             html += `<p><strong>Dependencies:</strong> ${sourceCount}</p>`;
             html += `<p><strong>Used by:</strong> ${targetCount}</p>`;
@@ -615,6 +753,28 @@ class SbomGraph {
                 .duration(200)
                 .style("opacity", .9);
                 
+            // Special handling for cluster nodes
+            if (d.isCluster) {
+                this.tooltip.attr("class", "tooltip cluster-tooltip");
+                
+                let tooltipContent = `
+                    <strong>${d.name}</strong><br/>
+                    Type: ${d.clusterType || 'unknown'}<br/>
+                    Components: ${d.componentCount}<br/>
+                    ${d.size ? `Total Size: ${this._formatFileSize(d.size)}<br/>` : ''}
+                    SBOM: ${d.sbom_name || d.sbom || "Unknown"}<br/><br/>
+                    <span style="font-style: italic; font-size: 11px;">Double-click to expand cluster</span>
+                `;
+                
+                this.tooltip.html(tooltipContent)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+                return;
+            }
+            
+            // Regular node handling
+            this.tooltip.attr("class", "tooltip");
+            
             // Use display_name if available, otherwise fallback to name
             const displayName = d.display_name || d.name || 'Unknown';
                 
@@ -624,7 +784,7 @@ class SbomGraph {
                 ${d.vendor ? `Vendor: ${d.vendor}<br/>` : ''}
                 ${d.type ? `Type: ${d.type}<br/>` : ''}
                 ${d.size ? `Size: ${this._formatFileSize(d.size)}<br/>` : ''}
-                SBOM: ${d.sbom_name || "Unknown"}<br/>
+                SBOM: ${d.sbom_name || d.sbom || "Unknown"}<br/>
             `;
             
             // Add info about sharing if relevant
@@ -722,6 +882,256 @@ class SbomGraph {
             d.fy = null;
         } catch (error) {
             this.logger.error("Error ending drag:", error);
+        }
+    }
+
+    // New method to create a clustered graph for large SBOMs
+    _createClusteredGraph() {
+        if (!this.showClusters) {
+            return; // Skip clustering if disabled
+        }
+        
+        try {
+            // Group nodes by SBOM
+            const nodesBySbom = {};
+            this.originalNodes.forEach(node => {
+                if (!node.sbom) return;
+                
+                if (!nodesBySbom[node.sbom]) {
+                    nodesBySbom[node.sbom] = [];
+                }
+                nodesBySbom[node.sbom].push(node);
+            });
+            
+            // Identify SBOMs that need clustering (exceed threshold)
+            const sbomsToCLuster = [];
+            const nodesForClusterGraph = [];
+            const linksForClusterGraph = [];
+            
+            // Track shared components (appear in multiple SBOMs)
+            const componentSboms = {};
+            this.originalNodes.forEach(node => {
+                if (!node.id || !node.sbom) return;
+                
+                if (!componentSboms[node.id]) {
+                    componentSboms[node.id] = new Set();
+                }
+                componentSboms[node.id].add(node.sbom);
+            });
+            
+            // Find shared components
+            const sharedComponents = new Set();
+            Object.entries(componentSboms).forEach(([componentId, sboms]) => {
+                if (sboms.size > 1) {
+                    sharedComponents.add(componentId);
+                }
+            });
+            
+            this.logger.debug(`Found ${sharedComponents.size} shared components across SBOMs`);
+            
+            // Process each SBOM
+            Object.entries(nodesBySbom).forEach(([sbomId, sbomNodes]) => {
+                if (sbomNodes.length > this.clusterThreshold) {
+                    // This SBOM needs clustering
+                    this.logger.debug(`Clustering SBOM ${sbomId} with ${sbomNodes.length} nodes`);
+                    sbomsToCLuster.push(sbomId);
+                    
+                    // Find important components (shared with other SBOMs or having many dependencies)
+                    const importantComponents = [];
+                    const regularComponents = [];
+                    
+                    sbomNodes.forEach(node => {
+                        if (sharedComponents.has(node.id)) {
+                            // This is a shared component - keep it
+                            importantComponents.push(node);
+                        } else {
+                            // Count links for this node
+                            const linkCount = this.originalLinks.filter(link => 
+                                (link.source === node.id || link.target === node.id)
+                            ).length;
+                            
+                            if (linkCount > 5) {
+                                // This is a highly connected component - keep it
+                                importantComponents.push(node);
+                            } else {
+                                // This is a regular component - cluster it
+                                regularComponents.push(node);
+                            }
+                        }
+                    });
+                    
+                    this.logger.debug(`SBOM ${sbomId}: ${importantComponents.length} important nodes, ${regularComponents.length} regular nodes`);
+                    
+                    // Add important components to the graph
+                    nodesForClusterGraph.push(...importantComponents);
+                    
+                    // Create cluster groups by type
+                    const componentsByType = {};
+                    regularComponents.forEach(node => {
+                        const type = node.type || 'unknown';
+                        if (!componentsByType[type]) {
+                            componentsByType[type] = [];
+                        }
+                        componentsByType[type].push(node);
+                    });
+                    
+                    // Create cluster nodes for each type
+                    Object.entries(componentsByType).forEach(([type, nodes]) => {
+                        if (nodes.length > 0) {
+                            // Create a cluster node
+                            const clusterId = `cluster-${sbomId}-${type}`;
+                            const clusterNode = {
+                                id: clusterId,
+                                name: `${nodes.length} ${type} components`,
+                                display_name: `${nodes.length} ${type} components`,
+                                type: 'cluster',
+                                sbom: sbomId,
+                                clusterType: type,
+                                size: nodes.reduce((sum, node) => sum + (node.size || 0), 0),
+                                componentCount: nodes.length,
+                                components: nodes.map(n => n.id),
+                                isCluster: true
+                            };
+                            
+                            nodesForClusterGraph.push(clusterNode);
+                            
+                            // Create links for the cluster
+                            const clusterLinks = this._createClusterLinks(clusterId, nodes, importantComponents);
+                            linksForClusterGraph.push(...clusterLinks);
+                        }
+                    });
+                } else {
+                    // This SBOM doesn't need clustering - keep all nodes
+                    nodesForClusterGraph.push(...sbomNodes);
+                }
+            });
+            
+            // Process links for non-clustered SBOMs
+            const clusterSbomIds = new Set(sbomsToCLuster);
+            const nonClusterNodeIds = new Set(nodesForClusterGraph.map(n => n.id));
+            
+            this.originalLinks.forEach(link => {
+                // Only include links where both source and target are in the graph
+                if (nonClusterNodeIds.has(link.source) && nonClusterNodeIds.has(link.target)) {
+                    linksForClusterGraph.push(link);
+                }
+            });
+            
+            this.logger.info(`Cluster graph created with ${nodesForClusterGraph.length} nodes and ${linksForClusterGraph.length} links`);
+            
+            // Update the nodes and links
+            this.nodes = nodesForClusterGraph;
+            this.links = linksForClusterGraph;
+        } catch (error) {
+            this.logger.error("Error creating clustered graph:", error);
+            // Fall back to original nodes and links
+            this.nodes = this.originalNodes;
+            this.links = this.originalLinks;
+        }
+    }
+    
+    // Helper to create links between clusters and important components
+    _createClusterLinks(clusterId, clusterNodes, importantNodes) {
+        const links = [];
+        const importantNodeIds = new Set(importantNodes.map(n => n.id));
+        
+        // Find all links involving the clustered nodes
+        this.originalLinks.forEach(link => {
+            const sourceInCluster = clusterNodes.some(n => n.id === link.source);
+            const targetInCluster = clusterNodes.some(n => n.id === link.target);
+            
+            if (sourceInCluster && importantNodeIds.has(link.target)) {
+                // Link from cluster to important node
+                links.push({
+                    source: clusterId,
+                    target: link.target,
+                    sbom: link.sbom,
+                    type: 'cluster-to-node'
+                });
+            } else if (targetInCluster && importantNodeIds.has(link.source)) {
+                // Link from important node to cluster
+                links.push({
+                    source: link.source,
+                    target: clusterId,
+                    sbom: link.sbom,
+                    type: 'node-to-cluster'
+                });
+            }
+        });
+        
+        return links;
+    }
+
+    // New method to expand a cluster
+    _expandCluster(clusterNode) {
+        try {
+            if (!clusterNode.isCluster || !clusterNode.components) {
+                return;
+            }
+            
+            this.logger.debug(`Expanding cluster ${clusterNode.id} with ${clusterNode.components.length} components`);
+            
+            // Find the nodes that were in this cluster
+            const expandedNodes = [];
+            this.originalNodes.forEach(node => {
+                if (clusterNode.components.includes(node.id)) {
+                    expandedNodes.push(node);
+                }
+            });
+            
+            // Find any links between these nodes
+            const expandedLinks = [];
+            this.originalLinks.forEach(link => {
+                const sourceInCluster = clusterNode.components.includes(link.source);
+                const targetInCluster = clusterNode.components.includes(link.target);
+                
+                if (sourceInCluster && targetInCluster) {
+                    // This is a link between two nodes in the cluster
+                    expandedLinks.push(link);
+                }
+            });
+            
+            this.logger.debug(`Found ${expandedNodes.length} nodes and ${expandedLinks.length} links to expand`);
+            
+            // Create a new node list without the cluster node
+            const newNodes = this.nodes.filter(node => node.id !== clusterNode.id);
+            
+            // Add the expanded nodes
+            newNodes.push(...expandedNodes);
+            
+            // Create a new link list without links to the cluster
+            const newLinks = this.links.filter(link => 
+                link.source !== clusterNode.id && link.target !== clusterNode.id
+            );
+            
+            // Add links from cluster members to other nodes
+            this.originalLinks.forEach(link => {
+                if (clusterNode.components.includes(link.source) && !clusterNode.components.includes(link.target)) {
+                    // Link from cluster member to external node
+                    const targetNode = this.nodes.find(n => n.id === link.target);
+                    if (targetNode) {
+                        newLinks.push(link);
+                    }
+                } else if (clusterNode.components.includes(link.target) && !clusterNode.components.includes(link.source)) {
+                    // Link from external node to cluster member
+                    const sourceNode = this.nodes.find(n => n.id === link.source);
+                    if (sourceNode) {
+                        newLinks.push(link);
+                    }
+                }
+            });
+            
+            // Add the internal cluster links
+            newLinks.push(...expandedLinks);
+            
+            // Update the graph with the new nodes and links
+            this.nodes = newNodes;
+            this.links = newLinks;
+            
+            // Update the graph
+            this.update();
+        } catch (error) {
+            this.logger.error(`Error expanding cluster ${clusterNode.id}:`, error);
         }
     }
 } 

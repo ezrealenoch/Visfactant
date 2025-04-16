@@ -340,6 +340,45 @@ document.addEventListener('DOMContentLoaded', function() {
         logger.warn("Highlight common checkbox not found");
     }
     
+    // Clustering controls for large SBOMs
+    const enableClusteringCheckbox = document.getElementById('enable-clustering');
+    const clusterThresholdSlider = document.getElementById('cluster-threshold');
+    const thresholdValueDisplay = document.getElementById('threshold-value');
+    
+    if (enableClusteringCheckbox) {
+        enableClusteringCheckbox.addEventListener('change', function() {
+            logger.debug(`Setting clustering enabled to: ${this.checked}`);
+            graph.showClusters = this.checked;
+            // Re-process the graph data with new clustering settings
+            graph.updateData(graph.originalNodes ? {
+                nodes: graph.originalNodes,
+                links: graph.originalLinks
+            } : currentGraphData);
+        });
+    } else {
+        logger.warn("Enable clustering checkbox not found");
+    }
+    
+    if (clusterThresholdSlider && thresholdValueDisplay) {
+        clusterThresholdSlider.addEventListener('input', function() {
+            // Update the display value
+            thresholdValueDisplay.textContent = this.value;
+        });
+        
+        clusterThresholdSlider.addEventListener('change', function() {
+            const threshold = parseInt(this.value);
+            logger.debug(`Setting cluster threshold to: ${threshold}`);
+            graph.clusterThreshold = threshold;
+            // Re-process the graph data with new threshold
+            graph.updateData(graph.originalNodes ? {
+                nodes: graph.originalNodes,
+                links: graph.originalLinks
+            } : currentGraphData);
+        });
+    } else {
+        logger.warn("Cluster threshold controls not found");
+    }
+    
     // Search input
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
@@ -381,6 +420,50 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Track current graph data for clustering controls
+    let currentGraphData = { nodes: [], links: [] };
+
+    function fetchGraphData() {
+        logger.info("Fetching graph data from server");
+        setLoading(true);
+        hideGraphError();
+        
+        fetch('/graph')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                logger.info(`Loaded graph data with ${data.nodes.length} nodes and ${data.links.length} links`);
+                
+                if (data.nodes.length === 0) {
+                    logger.warn("Graph data contains no nodes");
+                    showGraphError("The graph contains no nodes to display. Try uploading a different SBOM file.");
+                    return;
+                }
+                
+                // Store the graph data for clustering control updates
+                currentGraphData = data;
+                
+                try {
+                    graph.updateData(data);
+                } catch (error) {
+                    logger.error("Error updating graph with data:", error);
+                    showGraphError("Failed to visualize the graph data. See console for details.");
+                }
+            })
+            .catch(error => {
+                logger.error('Error fetching graph data:', error);
+                showGraphError("Failed to load graph data from server.");
+                showErrorModal("Graph Data Loading Failed", error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }
+    
     // Fetch and update loaded SBOMs
     function fetchSbomList() {
         logger.info("Fetching SBOM list from server");
@@ -404,44 +487,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 logger.error('Error fetching SBOM list:', error);
                 showGraphError("Failed to load SBOM list from server.");
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }
-    
-    function fetchGraphData() {
-        logger.info("Fetching graph data from server");
-        setLoading(true);
-        hideGraphError();
-        
-        fetch('/graph')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                logger.info(`Loaded graph data with ${data.nodes.length} nodes and ${data.links.length} links`);
-                
-                if (data.nodes.length === 0) {
-                    logger.warn("Graph data contains no nodes");
-                    showGraphError("The graph contains no nodes to display. Try uploading a different SBOM file.");
-                    return;
-                }
-                
-                try {
-                    graph.updateData(data);
-                } catch (error) {
-                    logger.error("Error updating graph with data:", error);
-                    showGraphError("Failed to visualize the graph data. See console for details.");
-                }
-            })
-            .catch(error => {
-                logger.error('Error fetching graph data:', error);
-                showGraphError("Failed to load graph data from server.");
-                showErrorModal("Graph Data Loading Failed", error);
             })
             .finally(() => {
                 setLoading(false);
