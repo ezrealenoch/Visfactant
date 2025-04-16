@@ -1,6 +1,10 @@
 # Samples folder containing large binary files
 samples/
 
+# SBOM data files (should not be publicly viewable)
+output_sbom.json
+riot_games_sbom.json
+
 # Python virtual environment
 venv/
 env/
