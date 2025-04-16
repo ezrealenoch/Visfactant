@@ -95,6 +95,13 @@ body {
     opacity: 0.7;
 }
 
+/* Cross-SBOM links - make them more visible */
+.cross-sbom-link {
+    stroke-width: 2.5px !important;
+    stroke-dasharray: 7,3 !important;
+    opacity: 0.9 !important;
+}
+
 .tooltip {
     position: absolute;
     text-align: center;
