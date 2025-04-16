@@ -115,7 +115,7 @@ def upload_file():
                 # Look for any array with component-like objects
                 for key, value in sbom_content.items():
                     if isinstance(value, list) and len(value) > 0 and isinstance(value[0], dict):
-                        if any(comp_key in value[0] for comp_key in ['name', 'id', 'type', 'version']):
+                        if any(comp_key in value[0] for comp_key in ['name', 'id', 'type', 'version', 'fileName', 'UUID']):
                             logger.debug(f"Found potential component array in key: '{key}'")
                             components = value
                             break
@@ -147,12 +147,21 @@ def upload_file():
                 }
                 
                 # Name can be in different fields depending on format
-                if 'name' in component:
+                if 'name' in component and component['name']:
                     normalized['name'] = component['name']
-                elif 'Name' in component:
+                elif 'Name' in component and component['Name']:
                     normalized['name'] = component['Name']
-                elif 'packageName' in component:
+                elif 'packageName' in component and component['packageName']:
                     normalized['name'] = component['packageName']
+                elif 'fileName' in component and component['fileName'] and len(component['fileName']) > 0:
+                    # Use the first filename as the component name
+                    if isinstance(component['fileName'], list):
+                        normalized['name'] = component['fileName'][0]
+                    else:
+                        normalized['name'] = component['fileName']
+                elif 'UUID' in component and component['UUID']:
+                    # Use UUID as a last resort for name
+                    normalized['name'] = f"Component-{component['UUID']}"
                 elif 'purl' in component:
                     # Extract name from purl if possible
                     purl_parts = component['purl'].split('/')
@@ -161,13 +170,13 @@ def upload_file():
                         normalized['name'] = name_part
                 
                 # Version information
-                if 'version' in component:
+                if 'version' in component and component['version']:
                     normalized['version'] = component['version']
-                elif 'Version' in component:
+                elif 'Version' in component and component['Version']:
                     normalized['version'] = component['Version']
-                elif 'packageVersion' in component:
+                elif 'packageVersion' in component and component['packageVersion']:
                     normalized['version'] = component['packageVersion']
-                elif 'versionInfo' in component:
+                elif 'versionInfo' in component and component['versionInfo']:
                     normalized['version'] = component['versionInfo']
                 elif 'purl' in component and '@' in component['purl']:
                     # Extract version from purl if possible
@@ -181,6 +190,28 @@ def upload_file():
                     normalized['type'] = component['Type']
                 elif 'componentType' in component:
                     normalized['type'] = component['componentType']
+                elif 'elfIsLib' in component.get('metadata', [{}])[0] and component.get('metadata', [{}])[0]['elfIsLib']:
+                    normalized['type'] = 'library'
+                elif 'elfIsExe' in component.get('metadata', [{}])[0] and component.get('metadata', [{}])[0]['elfIsExe']:
+                    normalized['type'] = 'executable'
+                
+                # Additional metadata for display
+                if 'fileName' in component and component['fileName']:
+                    if isinstance(component['fileName'], list):
+                        normalized['display_name'] = component['fileName'][0]
+                    else:
+                        normalized['display_name'] = component['fileName']
+                
+                # Size information
+                if 'size' in component:
+                    normalized['size'] = component['size']
+                
+                # Vendor information 
+                if 'vendor' in component and component['vendor']:
+                    if isinstance(component['vendor'], list) and len(component['vendor']) > 0:
+                        normalized['vendor'] = component['vendor'][0]
+                    else:
+                        normalized['vendor'] = component['vendor']
                 
                 # Dependencies - handle various formats
                 if 'dependencies' in component and isinstance(component['dependencies'], list):
@@ -189,6 +220,13 @@ def upload_file():
                     normalized['dependencies'] = component['dependsOn']
                 elif 'requires' in component and isinstance(component['requires'], list):
                     normalized['dependencies'] = component['requires']
+                elif 'metadata' in component and isinstance(component['metadata'], list):
+                    # Check for ELF dependencies in metadata
+                    for meta in component['metadata']:
+                        if isinstance(meta, dict) and 'elfDependencies' in meta and meta['elfDependencies']:
+                            # Create simple dependency entries from ELF dependencies
+                            normalized['dependencies'] = [{'name': dep} for dep in meta['elfDependencies']]
+                            break
                 
                 return normalized
             
@@ -209,13 +247,31 @@ def upload_file():
                         seen_nodes.add(component_id)
                         
                         # Add to nodes list
-                        nodes.append({
+                        node = {
                             'id': component_id,
                             'name': component_name,
                             'version': component_version,
                             'type': component_type,
                             'sbom': sbom_id
-                        })
+                        }
+                        
+                        # Add UUID if available for relationship mapping
+                        if 'UUID' in component:
+                            node['uuid'] = component['UUID']
+                        
+                        # Add display name if available
+                        if 'display_name' in comp_data:
+                            node['display_name'] = comp_data['display_name']
+                        
+                        # Add size information if available
+                        if 'size' in comp_data:
+                            node['size'] = comp_data['size']
+                        
+                        # Add vendor information if available
+                        if 'vendor' in comp_data:
+                            node['vendor'] = comp_data['vendor']
+                            
+                        nodes.append(node)
                     
                     # Check for dependencies
                     dependencies = comp_data['dependencies']
@@ -248,6 +304,70 @@ def upload_file():
                 'nodes': len(nodes),
                 'links': len(links)
             }
+            
+            # Process additional relationships from the SBOM file if present
+            if 'relationships' in sbom_content and isinstance(sbom_content['relationships'], list):
+                logger.debug(f"Processing {len(sbom_content['relationships'])} relationships from SBOM")
+                
+                # Create a mapping from UUID to node ID for lookup
+                uuid_to_id = {}
+                
+                # Map directly from components first for better accuracy
+                for component in components:
+                    if 'UUID' in component and component['UUID']:
+                        # Find the node that corresponds to this component UUID
+                        component_name = component.get('name', '')
+                        if not component_name and 'fileName' in component and component['fileName']:
+                            if isinstance(component['fileName'], list) and len(component['fileName']) > 0:
+                                component_name = component['fileName'][0]
+                            else:
+                                component_name = component['fileName']
+                                
+                        component_version = component.get('version', '')
+                        component_id = f"{component_name}@{component_version}" if component_version else component_name
+                        
+                        if component_id:  # Only map if we have a valid ID
+                            uuid_to_id[component['UUID']] = component_id
+                            logger.debug(f"Mapped UUID {component['UUID']} to component ID {component_id}")
+                
+                # Also check nodes for UUIDs
+                for node in nodes:
+                    if 'uuid' in node:
+                        uuid_to_id[node['uuid']] = node['id']
+                
+                # Track which relationships we couldn't process
+                skipped_relationships = 0
+                added_relationships = 0
+                
+                # Process relationships and create links
+                for rel in sbom_content['relationships']:
+                    try:
+                        if 'xUUID' in rel and 'yUUID' in rel and 'relationship' in rel:
+                            source_uuid = rel['xUUID']
+                            target_uuid = rel['yUUID']
+                            
+                            if source_uuid in uuid_to_id and target_uuid in uuid_to_id:
+                                # Create a link from source to target
+                                link = {
+                                    'source': uuid_to_id[source_uuid],
+                                    'target': uuid_to_id[target_uuid],
+                                    'sbom': sbom_id,
+                                    'type': rel['relationship']
+                                }
+                                links.append(link)
+                                added_relationships += 1
+                                logger.debug(f"Added relationship: {link['source']} {link['type']} {link['target']}")
+                            else:
+                                skipped_relationships += 1
+                                if source_uuid not in uuid_to_id:
+                                    logger.debug(f"Skipped relationship - source UUID {source_uuid} not found in node mapping")
+                                if target_uuid not in uuid_to_id:
+                                    logger.debug(f"Skipped relationship - target UUID {target_uuid} not found in node mapping")
+                    except Exception as e:
+                        logger.warning(f"Error processing relationship: {str(e)}")
+                        skipped_relationships += 1
+                
+                logger.info(f"Added {added_relationships} relationships, skipped {skipped_relationships} relationships due to missing components")
             
             # Update graph data
             graph_data['nodes'].extend(nodes)

@@ -187,8 +187,8 @@ class SbomGraph {
     }
 
     getNodeSize(d) {
-        const baseSize = 8;
-        const maxSize = 30;
+        const baseSize = 15;
+        const maxSize = 45;
         
         try {
             switch (this.nodeSizeBy) {
@@ -239,8 +239,44 @@ class SbomGraph {
         try {
             this.logger.info(`Updating graph data with ${data.nodes.length} nodes and ${data.links.length} links`);
             
-            this.nodes = data.nodes;
-            this.links = data.links;
+            // Validate node data - ensure no duplicate IDs
+            const uniqueNodes = {};
+            this.nodes = [];
+            data.nodes.forEach(node => {
+                if (node.id && !uniqueNodes[node.id]) {
+                    uniqueNodes[node.id] = true;
+                    this.nodes.push(node);
+                }
+            });
+            
+            if (this.nodes.length < data.nodes.length) {
+                this.logger.warn(`Filtered out ${data.nodes.length - this.nodes.length} duplicate nodes`);
+            }
+            
+            // Validate links - ensure source and target are strings, not objects
+            const nodeIds = new Set(this.nodes.map(node => node.id));
+            this.links = [];
+            
+            data.links.forEach(link => {
+                // Ensure source and target are valid node IDs
+                const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+                
+                if (sourceId && targetId && nodeIds.has(sourceId) && nodeIds.has(targetId)) {
+                    this.links.push({
+                        source: sourceId,
+                        target: targetId,
+                        sbom: link.sbom,
+                        type: link.type || 'unknown'
+                    });
+                }
+            });
+            
+            if (this.links.length < data.links.length) {
+                this.logger.warn(`Filtered out ${data.links.length - this.links.length} invalid links`);
+            }
+            
+            this.logger.info(`Processed ${this.nodes.length} nodes and ${this.links.length} links for visualization`);
             
             // Assign colors to SBOMs if needed
             const sbomIds = new Set();
@@ -285,6 +321,26 @@ class SbomGraph {
                 this.logger.warn("No nodes to render");
                 return;
             }
+            
+            // Sanitize links - make sure source and target exist in nodes
+            const nodeIds = new Set(this.nodes.map(node => node.id));
+            this.links = this.links.filter(link => {
+                if (typeof link.source === 'object' && link.source) {
+                    return nodeIds.has(link.source.id);
+                } else if (typeof link.source === 'string') {
+                    return nodeIds.has(link.source);
+                }
+                return false;
+            }).filter(link => {
+                if (typeof link.target === 'object' && link.target) {
+                    return nodeIds.has(link.target.id);
+                } else if (typeof link.target === 'string') {
+                    return nodeIds.has(link.target);
+                }
+                return false;
+            });
+            
+            this.logger.debug(`After sanitizing, rendering ${this.nodes.length} nodes and ${this.links.length} links`);
             
             // Add links
             this.linkElements = this.graphGroup.append("g")
@@ -338,23 +394,52 @@ class SbomGraph {
             this.nodeElements.append("text")
                 .attr("dx", d => this.getNodeSize(d) + 5)
                 .attr("dy", ".35em")
-                .text(d => d.name ? (d.name.length > 20 ? d.name.substring(0, 17) + "..." : d.name) : "Unknown");
+                .text(d => {
+                    const displayName = d.display_name || d.name || d.id || "Unknown";
+                    return displayName.length > 20 ? displayName.substring(0, 17) + "..." : displayName;
+                });
                 
             // Apply initial filters
             this.filterVisibleSboms();
             
             // Update simulation
-            this.simulation
-                .nodes(this.nodes)
-                .on("tick", () => this._ticked());
+            try {
+                this.simulation
+                    .nodes(this.nodes)
+                    .on("tick", () => this._ticked());
+                    
+                this.simulation.force("link")
+                    .links(this.links);
+                    
+                // Restart simulation
+                this.simulation.alpha(1).restart();
                 
-            this.simulation.force("link")
-                .links(this.links);
-                
-            // Restart simulation
-            this.simulation.alpha(1).restart();
-            
-            this.logger.debug("Graph update completed");
+                this.logger.debug("Graph update completed");
+            } catch (error) {
+                this.logger.error("Error updating simulation:", error);
+                // Attempt recovery by recreating the simulation
+                try {
+                    this.logger.debug("Recreating simulation to recover from error");
+                    this.simulation = d3.forceSimulation()
+                        .force("link", d3.forceLink().id(d => d.id).distance(100))
+                        .force("charge", d3.forceManyBody().strength(-300))
+                        .force("center", d3.forceCenter(this.width / 2, this.height / 2))
+                        .force("collide", d3.forceCollide().radius(50));
+                        
+                    this.simulation
+                        .nodes(this.nodes)
+                        .on("tick", () => this._ticked());
+                        
+                    this.simulation.force("link")
+                        .links(this.links);
+                        
+                    this.simulation.alpha(1).restart();
+                    
+                    this.logger.debug("Simulation recovery succeeded");
+                } catch (recoveryError) {
+                    this.logger.error("Failed to recover simulation:", recoveryError);
+                }
+            }
         } catch (error) {
             this.logger.error("Error updating graph:", error);
         }
@@ -465,16 +550,28 @@ class SbomGraph {
             }
             
             const d = this.selectedNode;
-            let html = `<h6>${d.name || 'Unknown'}</h6>`;
+            
+            // Use display_name if available, otherwise fallback to name
+            const displayName = d.display_name || d.name || 'Unknown';
+            let html = `<h6>${displayName}</h6>`;
+            
             html += `<p><strong>ID:</strong> ${d.id}</p>`;
             
             if (d.version) html += `<p><strong>Version:</strong> ${d.version}</p>`;
             if (d.vendor) html += `<p><strong>Vendor:</strong> ${d.vendor}</p>`;
+            if (d.uuid) html += `<p><strong>UUID:</strong> ${d.uuid}</p>`;
             if (d.fileName) html += `<p><strong>Filename:</strong> ${d.fileName}</p>`;
-            if (d.size) html += `<p><strong>Size:</strong> ${this._formatFileSize(d.size)}</p>`;
+            
+            if (d.size) {
+                const formattedSize = this._formatFileSize(d.size);
+                html += `<p><strong>Size:</strong> ${formattedSize}</p>`;
+            }
+            
+            // Show type information
+            if (d.type) html += `<p><strong>Type:</strong> ${d.type}</p>`;
             
             // Show which SBOM this node is from
-            html += `<p><strong>SBOM:</strong> ${d.sbom_name}</p>`;
+            html += `<p><strong>SBOM:</strong> ${d.sbom_name || "Unknown"}</p>`;
             
             // If shared across multiple SBOMs, show which ones
             if (d.shared_in && d.shared_in.length > 1) {
@@ -518,11 +615,16 @@ class SbomGraph {
                 .duration(200)
                 .style("opacity", .9);
                 
+            // Use display_name if available, otherwise fallback to name
+            const displayName = d.display_name || d.name || 'Unknown';
+                
             let tooltipContent = `
-                <strong>${d.name || 'Unknown'}</strong><br/>
+                <strong>${displayName}</strong><br/>
                 ${d.version ? `Version: ${d.version}<br/>` : ''}
                 ${d.vendor ? `Vendor: ${d.vendor}<br/>` : ''}
-                SBOM: ${d.sbom_name}<br/>
+                ${d.type ? `Type: ${d.type}<br/>` : ''}
+                ${d.size ? `Size: ${this._formatFileSize(d.size)}<br/>` : ''}
+                SBOM: ${d.sbom_name || "Unknown"}<br/>
             `;
             
             // Add info about sharing if relevant
@@ -574,15 +676,20 @@ class SbomGraph {
         try {
             if (this.linkElements) {
                 this.linkElements
-                    .attr("x1", d => d.source.x)
-                    .attr("y1", d => d.source.y)
-                    .attr("x2", d => d.target.x)
-                    .attr("y2", d => d.target.y);
+                    .attr("x1", d => d.source?.x ?? 0)
+                    .attr("y1", d => d.source?.y ?? 0)
+                    .attr("x2", d => d.target?.x ?? 0)
+                    .attr("y2", d => d.target?.y ?? 0);
             }
 
             if (this.nodeElements) {
                 this.nodeElements
-                    .attr("transform", d => `translate(${d.x},${d.y})`);
+                    .attr("transform", d => {
+                        // Ensure x and y exist - use center of graph if not
+                        const x = d.x ?? this.width/2; 
+                        const y = d.y ?? this.height/2;
+                        return `translate(${x},${y})`;
+                    });
             }
         } catch (error) {
             this.logger.error("Error during simulation tick:", error);
