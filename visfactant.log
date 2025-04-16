@@ -1,0 +1,182 @@
+2025-04-15 21:36:12,947 [INFO] Starting Visfactant application server
+2025-04-15 21:36:12,977 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-15 21:36:12,977 [INFO] [33mPress CTRL+C to quit[0m
+2025-04-15 21:36:12,978 [INFO]  * Restarting with stat
+2025-04-15 21:36:13,169 [INFO] Starting Visfactant application server
+2025-04-15 21:36:13,182 [WARNING]  * Debugger is active!
+2025-04-15 21:36:13,184 [INFO]  * Debugger PIN: 139-796-585
+2025-04-15 21:36:17,503 [INFO] Serving index page
+2025-04-15 21:36:17,505 [INFO] 127.0.0.1 - - [15/Apr/2025 21:36:17] "GET / HTTP/1.1" 200 -
+2025-04-15 21:36:17,567 [INFO] 127.0.0.1 - - [15/Apr/2025 21:36:17] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-04-15 21:36:17,570 [INFO] 127.0.0.1 - - [15/Apr/2025 21:36:17] "GET /static/css/styles.css HTTP/1.1" 200 -
+2025-04-15 21:36:17,570 [INFO] 127.0.0.1 - - [15/Apr/2025 21:36:17] "GET /static/js/graph.js HTTP/1.1" 200 -
+2025-04-15 21:36:17,725 [INFO] Returning list of 0 SBOMs
+2025-04-15 21:36:17,726 [INFO] 127.0.0.1 - - [15/Apr/2025 21:36:17] "GET /sboms HTTP/1.1" 200 -
+2025-04-15 21:36:17,726 [INFO] Returning graph data with 0 nodes and 0 links
+2025-04-15 21:36:17,726 [INFO] 127.0.0.1 - - [15/Apr/2025 21:36:17] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:36:25,654 [INFO] Processing file upload request
+2025-04-15 21:36:25,655 [INFO] Processing SBOM upload: output_sbom.json
+2025-04-15 21:36:25,655 [DEBUG] Successfully parsed SBOM JSON for output_sbom.json
+2025-04-15 21:36:25,655 [WARNING] No components found in SBOM: output_sbom.json
+2025-04-15 21:36:25,656 [INFO] 127.0.0.1 - - [15/Apr/2025 21:36:25] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+2025-04-15 21:36:32,016 [INFO] Processing file upload request
+2025-04-15 21:36:32,032 [INFO] Processing SBOM upload: riot_games_sbom.json
+2025-04-15 21:36:32,042 [DEBUG] Successfully parsed SBOM JSON for riot_games_sbom.json
+2025-04-15 21:36:32,043 [WARNING] No components found in SBOM: riot_games_sbom.json
+2025-04-15 21:36:32,045 [INFO] 127.0.0.1 - - [15/Apr/2025 21:36:32] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+2025-04-15 21:38:53,397 [INFO] Starting Visfactant application server
+2025-04-15 21:38:53,422 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-15 21:38:53,422 [INFO] [33mPress CTRL+C to quit[0m
+2025-04-15 21:38:53,423 [INFO]  * Restarting with stat
+2025-04-15 21:38:53,590 [INFO] Starting Visfactant application server
+2025-04-15 21:38:53,603 [WARNING]  * Debugger is active!
+2025-04-15 21:38:53,605 [INFO]  * Debugger PIN: 139-796-585
+2025-04-15 21:38:56,280 [INFO] Serving index page
+2025-04-15 21:38:56,282 [INFO] 127.0.0.1 - - [15/Apr/2025 21:38:56] "GET / HTTP/1.1" 200 -
+2025-04-15 21:38:56,331 [INFO] 127.0.0.1 - - [15/Apr/2025 21:38:56] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-04-15 21:38:56,344 [INFO] 127.0.0.1 - - [15/Apr/2025 21:38:56] "[36mGET /static/js/graph.js HTTP/1.1[0m" 304 -
+2025-04-15 21:38:56,344 [INFO] 127.0.0.1 - - [15/Apr/2025 21:38:56] "GET /static/js/main.js HTTP/1.1" 200 -
+2025-04-15 21:38:56,635 [INFO] Returning list of 0 SBOMs
+2025-04-15 21:38:56,636 [INFO] 127.0.0.1 - - [15/Apr/2025 21:38:56] "GET /sboms HTTP/1.1" 200 -
+2025-04-15 21:38:56,636 [INFO] Returning graph data with 0 nodes and 0 links
+2025-04-15 21:38:56,636 [INFO] 127.0.0.1 - - [15/Apr/2025 21:38:56] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:39:01,263 [INFO] Processing file upload request
+2025-04-15 21:39:01,264 [INFO] Processing SBOM upload: output_sbom.json
+2025-04-15 21:39:01,264 [DEBUG] Successfully parsed SBOM JSON for output_sbom.json
+2025-04-15 21:39:01,264 [WARNING] No components found in SBOM: output_sbom.json
+2025-04-15 21:39:01,265 [INFO] 127.0.0.1 - - [15/Apr/2025 21:39:01] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+2025-04-15 21:39:06,999 [INFO] Processing file upload request
+2025-04-15 21:39:07,014 [INFO] Processing SBOM upload: riot_games_sbom.json
+2025-04-15 21:39:07,024 [DEBUG] Successfully parsed SBOM JSON for riot_games_sbom.json
+2025-04-15 21:39:07,025 [WARNING] No components found in SBOM: riot_games_sbom.json
+2025-04-15 21:39:07,027 [INFO] 127.0.0.1 - - [15/Apr/2025 21:39:07] "[31m[1mPOST /upload HTTP/1.1[0m" 400 -
+2025-04-15 21:41:21,098 [INFO] Starting Visfactant application server
+2025-04-15 21:41:21,118 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-15 21:41:21,118 [INFO] [33mPress CTRL+C to quit[0m
+2025-04-15 21:41:21,119 [INFO]  * Restarting with stat
+2025-04-15 21:41:21,285 [INFO] Starting Visfactant application server
+2025-04-15 21:41:21,297 [WARNING]  * Debugger is active!
+2025-04-15 21:41:21,299 [INFO]  * Debugger PIN: 139-796-585
+2025-04-15 21:42:11,081 [INFO] Starting Visfactant application server
+2025-04-15 21:42:11,101 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-15 21:42:11,101 [INFO] [33mPress CTRL+C to quit[0m
+2025-04-15 21:42:11,102 [INFO]  * Restarting with stat
+2025-04-15 21:42:11,262 [INFO] Starting Visfactant application server
+2025-04-15 21:42:11,274 [WARNING]  * Debugger is active!
+2025-04-15 21:42:11,276 [INFO]  * Debugger PIN: 139-796-585
+2025-04-15 21:42:14,093 [INFO] Serving index page
+2025-04-15 21:42:14,095 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:14] "GET / HTTP/1.1" 200 -
+2025-04-15 21:42:14,144 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:14] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-04-15 21:42:14,147 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:14] "[36mGET /static/js/graph.js HTTP/1.1[0m" 304 -
+2025-04-15 21:42:14,147 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:14] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-04-15 21:42:14,186 [INFO] Returning list of 0 SBOMs
+2025-04-15 21:42:14,186 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:14] "GET /sboms HTTP/1.1" 200 -
+2025-04-15 21:42:14,186 [INFO] Returning graph data with 0 nodes and 0 links
+2025-04-15 21:42:14,186 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:14] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:42:19,204 [INFO] Processing file upload request
+2025-04-15 21:42:19,205 [INFO] Processing SBOM upload: output_sbom.json
+2025-04-15 21:42:19,205 [DEBUG] Successfully parsed SBOM JSON for output_sbom.json
+2025-04-15 21:42:19,205 [DEBUG] SBOM top-level keys: ['systems', 'hardware', 'software', 'relationships', 'analysisData', 'observations', 'starRelationships']
+2025-04-15 21:42:19,205 [DEBUG] Found potential component array in key: 'software'
+2025-04-15 21:42:19,205 [INFO] Found 8 components in SBOM: output_sbom.json
+2025-04-15 21:42:19,205 [INFO] Processed 4 nodes and 0 links for SBOM output_sbom.json
+2025-04-15 21:42:19,206 [INFO] Successfully processed SBOM 'output_sbom.json' with format: unknown
+2025-04-15 21:42:19,206 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:19] "POST /upload HTTP/1.1" 200 -
+2025-04-15 21:42:19,212 [INFO] Returning graph data with 4 nodes and 0 links
+2025-04-15 21:42:19,212 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:19] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:42:22,707 [INFO] Processing file upload request
+2025-04-15 21:42:22,711 [INFO] Processing SBOM upload: riot_games_sbom.json
+2025-04-15 21:42:22,718 [DEBUG] Successfully parsed SBOM JSON for riot_games_sbom.json
+2025-04-15 21:42:22,719 [DEBUG] SBOM top-level keys: ['systems', 'hardware', 'software', 'relationships', 'analysisData', 'observations', 'starRelationships']
+2025-04-15 21:42:22,719 [DEBUG] Found potential component array in key: 'software'
+2025-04-15 21:42:22,719 [INFO] Found 1567 components in SBOM: riot_games_sbom.json
+2025-04-15 21:42:22,720 [INFO] Processed 23 nodes and 0 links for SBOM riot_games_sbom.json
+2025-04-15 21:42:22,720 [INFO] Successfully processed SBOM 'riot_games_sbom.json' with format: unknown
+2025-04-15 21:42:22,721 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:22] "POST /upload HTTP/1.1" 200 -
+2025-04-15 21:42:22,724 [INFO] Returning graph data with 27 nodes and 0 links
+2025-04-15 21:42:22,725 [INFO] 127.0.0.1 - - [15/Apr/2025 21:42:22] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:43:11,616 [INFO] Request to delete SBOM: e270056b-6f4c-4620-ad58-6f1ed9f1a08b
+2025-04-15 21:43:11,616 [INFO] Deleted SBOM output_sbom.json from storage
+2025-04-15 21:43:11,616 [INFO] Removed SBOM e270056b-6f4c-4620-ad58-6f1ed9f1a08b nodes and links from graph data
+2025-04-15 21:43:11,616 [INFO] 127.0.0.1 - - [15/Apr/2025 21:43:11] "DELETE /sbom/e270056b-6f4c-4620-ad58-6f1ed9f1a08b HTTP/1.1" 200 -
+2025-04-15 21:43:11,619 [INFO] Returning graph data with 23 nodes and 0 links
+2025-04-15 21:43:11,620 [INFO] 127.0.0.1 - - [15/Apr/2025 21:43:11] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:43:12,389 [INFO] Request to delete SBOM: 08fe6655-742e-45be-bdbd-1653d7143c4c
+2025-04-15 21:43:12,389 [INFO] Deleted SBOM riot_games_sbom.json from storage
+2025-04-15 21:43:12,389 [INFO] Removed SBOM 08fe6655-742e-45be-bdbd-1653d7143c4c nodes and links from graph data
+2025-04-15 21:43:12,389 [INFO] 127.0.0.1 - - [15/Apr/2025 21:43:12] "DELETE /sbom/08fe6655-742e-45be-bdbd-1653d7143c4c HTTP/1.1" 200 -
+2025-04-15 21:43:12,396 [INFO] Returning graph data with 0 nodes and 0 links
+2025-04-15 21:43:12,396 [INFO] 127.0.0.1 - - [15/Apr/2025 21:43:12] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:43:19,426 [INFO] Processing file upload request
+2025-04-15 21:43:19,429 [INFO] Processing SBOM upload: riot_games_sbom.json
+2025-04-15 21:43:19,435 [DEBUG] Successfully parsed SBOM JSON for riot_games_sbom.json
+2025-04-15 21:43:19,435 [DEBUG] SBOM top-level keys: ['systems', 'hardware', 'software', 'relationships', 'analysisData', 'observations', 'starRelationships']
+2025-04-15 21:43:19,435 [DEBUG] Found potential component array in key: 'software'
+2025-04-15 21:43:19,435 [INFO] Found 1567 components in SBOM: riot_games_sbom.json
+2025-04-15 21:43:19,436 [INFO] Processed 23 nodes and 0 links for SBOM riot_games_sbom.json
+2025-04-15 21:43:19,436 [INFO] Successfully processed SBOM 'riot_games_sbom.json' with format: unknown
+2025-04-15 21:43:19,438 [INFO] 127.0.0.1 - - [15/Apr/2025 21:43:19] "POST /upload HTTP/1.1" 200 -
+2025-04-15 21:43:19,440 [INFO] Returning graph data with 23 nodes and 0 links
+2025-04-15 21:43:19,440 [INFO] 127.0.0.1 - - [15/Apr/2025 21:43:19] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:46:14,165 [INFO] Starting Visfactant application server
+2025-04-15 21:46:14,184 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-15 21:46:14,184 [INFO] [33mPress CTRL+C to quit[0m
+2025-04-15 21:46:14,185 [INFO]  * Restarting with stat
+2025-04-15 21:46:14,355 [INFO] Starting Visfactant application server
+2025-04-15 21:46:14,367 [WARNING]  * Debugger is active!
+2025-04-15 21:46:14,369 [INFO]  * Debugger PIN: 139-796-585
+2025-04-15 21:47:55,824 [INFO] Starting Visfactant application server
+2025-04-15 21:47:55,844 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-04-15 21:47:55,844 [INFO] [33mPress CTRL+C to quit[0m
+2025-04-15 21:47:55,845 [INFO]  * Restarting with stat
+2025-04-15 21:47:56,008 [INFO] Starting Visfactant application server
+2025-04-15 21:47:56,020 [WARNING]  * Debugger is active!
+2025-04-15 21:47:56,022 [INFO]  * Debugger PIN: 139-796-585
+2025-04-15 21:47:59,502 [INFO] Serving index page
+2025-04-15 21:47:59,505 [INFO] 127.0.0.1 - - [15/Apr/2025 21:47:59] "GET / HTTP/1.1" 200 -
+2025-04-15 21:47:59,551 [INFO] 127.0.0.1 - - [15/Apr/2025 21:47:59] "[36mGET /static/css/styles.css HTTP/1.1[0m" 304 -
+2025-04-15 21:47:59,560 [INFO] 127.0.0.1 - - [15/Apr/2025 21:47:59] "GET /static/js/graph.js HTTP/1.1" 200 -
+2025-04-15 21:47:59,561 [INFO] 127.0.0.1 - - [15/Apr/2025 21:47:59] "[36mGET /static/js/main.js HTTP/1.1[0m" 304 -
+2025-04-15 21:47:59,588 [INFO] Returning list of 0 SBOMs
+2025-04-15 21:47:59,588 [INFO] 127.0.0.1 - - [15/Apr/2025 21:47:59] "GET /sboms HTTP/1.1" 200 -
+2025-04-15 21:47:59,589 [INFO] Returning graph data with 0 nodes and 0 links
+2025-04-15 21:47:59,589 [INFO] 127.0.0.1 - - [15/Apr/2025 21:47:59] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:48:03,721 [INFO] Processing file upload request
+2025-04-15 21:48:03,722 [INFO] Processing SBOM upload: output_sbom.json
+2025-04-15 21:48:03,722 [DEBUG] Successfully parsed SBOM JSON for output_sbom.json
+2025-04-15 21:48:03,722 [DEBUG] SBOM top-level keys: ['systems', 'hardware', 'software', 'relationships', 'analysisData', 'observations', 'starRelationships']
+2025-04-15 21:48:03,722 [DEBUG] Found potential component array in key: 'software'
+2025-04-15 21:48:03,722 [INFO] Found 8 components in SBOM: output_sbom.json
+2025-04-15 21:48:03,722 [INFO] Processed 4 nodes and 0 links for SBOM output_sbom.json
+2025-04-15 21:48:03,722 [INFO] Successfully processed SBOM 'output_sbom.json' with format: unknown
+2025-04-15 21:48:03,722 [INFO] 127.0.0.1 - - [15/Apr/2025 21:48:03] "POST /upload HTTP/1.1" 200 -
+2025-04-15 21:48:03,728 [INFO] Returning graph data with 4 nodes and 0 links
+2025-04-15 21:48:03,728 [INFO] 127.0.0.1 - - [15/Apr/2025 21:48:03] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:48:09,492 [INFO] Processing file upload request
+2025-04-15 21:48:09,496 [INFO] Processing SBOM upload: riot_games_sbom.json
+2025-04-15 21:48:09,502 [DEBUG] Successfully parsed SBOM JSON for riot_games_sbom.json
+2025-04-15 21:48:09,502 [DEBUG] SBOM top-level keys: ['systems', 'hardware', 'software', 'relationships', 'analysisData', 'observations', 'starRelationships']
+2025-04-15 21:48:09,502 [DEBUG] Found potential component array in key: 'software'
+2025-04-15 21:48:09,502 [INFO] Found 1567 components in SBOM: riot_games_sbom.json
+2025-04-15 21:48:09,503 [INFO] Processed 23 nodes and 0 links for SBOM riot_games_sbom.json
+2025-04-15 21:48:09,503 [INFO] Successfully processed SBOM 'riot_games_sbom.json' with format: unknown
+2025-04-15 21:48:09,504 [INFO] 127.0.0.1 - - [15/Apr/2025 21:48:09] "POST /upload HTTP/1.1" 200 -
+2025-04-15 21:48:09,507 [INFO] Returning graph data with 27 nodes and 0 links
+2025-04-15 21:48:09,508 [INFO] 127.0.0.1 - - [15/Apr/2025 21:48:09] "GET /graph HTTP/1.1" 200 -
+2025-04-15 21:59:05,270 [INFO] Processing file upload request
+2025-04-15 21:59:05,276 [INFO] Processing SBOM upload: px_sbom.json
+2025-04-15 21:59:05,284 [DEBUG] Successfully parsed SBOM JSON for px_sbom.json
+2025-04-15 21:59:05,284 [DEBUG] SBOM top-level keys: ['systems', 'hardware', 'software', 'relationships', 'analysisData', 'observations', 'starRelationships']
+2025-04-15 21:59:05,285 [DEBUG] Found potential component array in key: 'software'
+2025-04-15 21:59:05,285 [INFO] Found 2143 components in SBOM: px_sbom.json
+2025-04-15 21:59:05,286 [INFO] Processed 5 nodes and 0 links for SBOM px_sbom.json
+2025-04-15 21:59:05,286 [INFO] Successfully processed SBOM 'px_sbom.json' with format: unknown
+2025-04-15 21:59:05,287 [INFO] 127.0.0.1 - - [15/Apr/2025 21:59:05] "POST /upload HTTP/1.1" 200 -
+2025-04-15 21:59:05,290 [INFO] Returning graph data with 32 nodes and 0 links
+2025-04-15 21:59:05,290 [INFO] 127.0.0.1 - - [15/Apr/2025 21:59:05] "GET /graph HTTP/1.1" 200 -
