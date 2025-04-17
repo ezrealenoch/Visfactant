@@ -64,12 +64,15 @@ body {
 
 /* Style for nodes shared across multiple SBOMs */
 .shared-node circle {
-    stroke: #ff0000;
-    stroke-width: 2px;
+    stroke: #ff3300;
+    stroke-width: 3px;
+    filter: drop-shadow(0 0 5px rgba(255, 51, 0, 0.7));
 }
 
 .shared-node text {
     font-weight: bold;
+    fill: #ff3300;
+    font-size: 12px;
 }
 
 /* Cluster node styling */

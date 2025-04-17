@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Enable debug logging
     const DEBUG = true;
     
+    // Initialize bootstrap tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+    
     // Logger function for consistent logging
     const logger = {
         debug: function(message) {

@@ -38,6 +38,7 @@ class SbomGraph {
         this.nodeSizeBy = 'fixed'; // Options: 'fixed', 'connections', 'file-size', 'shared'
         this.highlightCommon = true; // Whether to highlight components shared across SBOMs
         this.sbomColors = {}; // Map SBOM IDs to colors
+        this.sbomNames = {}; // Map SBOM IDs to names
         this.visibleSboms = new Set(); // Track which SBOMs are visible
         this.clusterThreshold = 30; // Max number of nodes from a single SBOM to display individually
         this.showClusters = true; // Whether to show clustered nodes
@@ -248,81 +249,59 @@ class SbomGraph {
 
     updateData(data) {
         try {
-            this.logger.info(`Updating graph data with ${data.nodes.length} nodes and ${data.links.length} links`);
+            this.logger.debug(`Updating graph data: ${data.nodes.length} nodes, ${data.links.length} links`);
             
-            // Store original nodes and links
-            this.originalNodes = JSON.parse(JSON.stringify(data.nodes));
-            this.originalLinks = JSON.parse(JSON.stringify(data.links));
+            // Store original data for filtering
+            this.originalNodes = data.nodes;
+            this.originalLinks = data.links;
             
-            // Validate node data - ensure no duplicate IDs
-            const uniqueNodes = {};
-            this.nodes = [];
-            data.nodes.forEach(node => {
-                if (node.id && !uniqueNodes[node.id]) {
-                    uniqueNodes[node.id] = true;
-                    this.nodes.push(node);
-                }
-            });
-            
-            if (this.nodes.length < data.nodes.length) {
-                this.logger.warn(`Filtered out ${data.nodes.length - this.nodes.length} duplicate nodes`);
-            }
-            
-            // Validate links - ensure source and target are strings, not objects
-            const nodeIds = new Set(this.nodes.map(node => node.id));
-            this.links = [];
-            
-            data.links.forEach(link => {
-                // Ensure source and target are valid node IDs
-                const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
-                const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
-                
-                if (sourceId && targetId && nodeIds.has(sourceId) && nodeIds.has(targetId)) {
-                    this.links.push({
-                        source: sourceId,
-                        target: targetId,
-                        sbom: link.sbom,
-                        type: link.type || 'unknown'
-                    });
-                }
-            });
-            
-            if (this.links.length < data.links.length) {
-                this.logger.warn(`Filtered out ${data.links.length - this.links.length} invalid links`);
-            }
-            
-            this.logger.info(`Processed ${this.nodes.length} nodes and ${this.links.length} links for visualization`);
-            
-            // Create cluster graph if needed
-            this._createClusteredGraph();
-            
-            // Assign colors to SBOMs if needed
-            const sbomIds = new Set();
-            this.nodes.forEach(node => {
-                // Fix: Use 'sbom' property instead of 'sbom_id'
-                if (node.sbom && !sbomIds.has(node.sbom)) {
-                    sbomIds.add(node.sbom);
-                    if (!this.sbomColors[node.sbom]) {
-                        // Assign color from palette or generate one
-                        const colorIndex = Object.keys(this.sbomColors).length % this.colorPalette.length;
-                        this.sbomColors[node.sbom] = this.colorPalette[colorIndex];
-                        this.logger.debug(`Assigned color ${this.colorPalette[colorIndex]} to SBOM ${node.sbom}`);
+            // Apply color assignments to SBOMs
+            if (data.sboms && data.sboms.length > 0) {
+                // Generate colors for SBOMs if not already assigned
+                data.sboms.forEach((sbom, index) => {
+                    if (!this.sbomColors[sbom.id]) {
+                        this.sbomColors[sbom.id] = d3.schemeCategory10[index % 10];
                     }
+                    // Store SBOM names
+                    this.sbomNames[sbom.id] = sbom.name || `SBOM ${sbom.id}`;
+                });
+            }
+            
+            // Update stats display
+            this._updateStats(data.nodes.length, data.links.length, Object.keys(this.sbomColors).length);
+            
+            // Process data for visualization
+            if (this.showClusters && data.nodes.length > 100) {
+                this.logger.debug("Large graph detected, creating clustered view");
+                this._createClusteredGraph();
+            } else {
+                this.nodes = JSON.parse(JSON.stringify(data.nodes));
+                this.links = JSON.parse(JSON.stringify(data.links));
+                
+                // Process links to use objects
+                this.links.forEach(link => {
+                    // Find source and target nodes
+                    const sourceNode = this.nodes.find(n => n.id === link.source);
+                    const targetNode = this.nodes.find(n => n.id === link.target);
                     
-                    // Add to visible SBOMs by default
-                    this.visibleSboms.add(node.sbom);
-                }
-            });
+                    if (sourceNode && targetNode) {
+                        link.source = sourceNode;
+                        link.target = targetNode;
+                    } else {
+                        this.logger.warn(`Link references non-existent node: ${link.source} -> ${link.target}`);
+                    }
+                });
+            }
             
-            // Update counts in UI
-            const statsNodes = document.getElementById('stats-nodes');
-            const statsLinks = document.getElementById('stats-links');
-            const statsSboms = document.getElementById('stats-sboms');
+            // Filter out links with missing endpoints
+            this.links = this.links.filter(link => 
+                typeof link.source === 'object' && 
+                typeof link.target === 'object' &&
+                link.source !== null &&
+                link.target !== null
+            );
             
-            if (statsNodes) statsNodes.textContent = `${this.originalNodes.length} Nodes (${this.nodes.length} Visible)`;
-            if (statsLinks) statsLinks.textContent = `${this.originalLinks.length} Links (${this.links.length} Visible)`;
-            if (statsSboms) statsSboms.textContent = `${sbomIds.size} SBOMs`;
-            
+            // Recreate the visualization
             this.update();
         } catch (error) {
             this.logger.error("Error updating graph data:", error);
@@ -436,13 +415,13 @@ class SbomGraph {
                 .attr("fill", d => this._getNodeColor(d))
                 .attr("stroke", d => {
                     if (d.shared_in && d.shared_in.length > 1 && this.highlightCommon) {
-                        return "#FF0000"; // Red border for shared components
+                        return "#FF3300"; // Brighter red border for shared components
                     }
                     return "#FFF";
                 })
                 .attr("stroke-width", d => {
                     if (d.shared_in && d.shared_in.length > 1 && this.highlightCommon) {
-                        return 2;
+                        return 3; // Thicker border
                     }
                     return 1.5;
                 });
@@ -543,6 +522,14 @@ class SbomGraph {
                     this.logger.error("Failed to recover simulation:", recoveryError);
                 }
             }
+            
+            // Add shared-node class to nodes shared across SBOMs
+            this.nodeElements.classed("shared-node", d => 
+                d.shared_in && d.shared_in.length > 1 && this.highlightCommon
+            );
+            
+            // Create or update legend
+            this._createLegend();
         } catch (error) {
             this.logger.error("Error updating graph:", error);
         }
@@ -831,8 +818,8 @@ class SbomGraph {
             // For nodes that appear in multiple SBOMs
             if (d.shared_in && d.shared_in.length > 1) {
                 if (this.highlightCommon) {
-                    // Use a gradient or special color for shared components
-                    return '#FF9900'; // Orange for shared components
+                    // Use a more vibrant color for shared components
+                    return '#FF5500'; // Bright orange for better visibility
                 }
                 // Otherwise use the color of the first SBOM it appears in
                 return this.sbomColors[d.shared_in[0]] || '#4285F4';
@@ -1214,6 +1201,75 @@ class SbomGraph {
             this.update();
         } catch (error) {
             this.logger.error(`Error expanding cluster ${clusterNode.id}:`, error);
+        }
+    }
+
+    _createLegend() {
+        try {
+            // Remove any existing legend
+            this.container.select(".legend-container").remove();
+            
+            // Create legend container
+            const legendContainer = this.container.append("div")
+                .attr("class", "legend-container");
+                
+            // Add title
+            legendContainer.append("div")
+                .attr("class", "font-weight-bold mb-2")
+                .text("Legend");
+                
+            // Add shared component legend item if highlighting is enabled
+            if (this.highlightCommon) {
+                const sharedItem = legendContainer.append("div")
+                    .attr("class", "legend-item");
+                    
+                sharedItem.append("div")
+                    .attr("class", "legend-color")
+                    .style("background-color", "#FF5500")
+                    .style("border", "3px solid #FF3300")
+                    .style("box-shadow", "0 0 5px rgba(255, 51, 0, 0.7)");
+                    
+                sharedItem.append("div")
+                    .text("Shared across multiple SBOMs");
+            }
+            
+            // Add SBOM-specific colors
+            Object.entries(this.sbomColors).forEach(([sbomId, color]) => {
+                // Skip if this SBOM is not visible
+                if (this.visibleSboms.size > 0 && !this.visibleSboms.has(sbomId)) {
+                    return;
+                }
+                
+                // Get SBOM name
+                const sbomName = this.sbomNames[sbomId] || `SBOM ${sbomId}`;
+                
+                const sbomItem = legendContainer.append("div")
+                    .attr("class", "legend-item");
+                    
+                sbomItem.append("div")
+                    .attr("class", "legend-color")
+                    .style("background-color", color);
+                    
+                sbomItem.append("div")
+                    .text(sbomName);
+            });
+        } catch (error) {
+            this.logger.error("Error creating legend:", error);
+        }
+    }
+
+    _updateStats(nodeCount, linkCount, sbomCount) {
+        try {
+            // Update counts in UI
+            const statsNodes = document.getElementById('stats-nodes');
+            const statsLinks = document.getElementById('stats-links');
+            const statsSboms = document.getElementById('stats-sboms');
+            
+            if (statsNodes) statsNodes.textContent = `${nodeCount} Nodes`;
+            if (statsLinks) statsLinks.textContent = `${linkCount} Links`;
+            if (statsSboms) statsSboms.textContent = `${sbomCount} SBOMs`;
+        } catch (error) {
+            this.logger.error("Error updating stats:", error);
         }
     }
 } 

@@ -17,6 +17,11 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
+                    <a class="nav-link" href="/terminal" target="_blank">
+                        <i class="fas fa-terminal"></i> Terminal Interface
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="#" data-toggle="modal" data-target="#helpModal">
                         <i class="fas fa-question-circle"></i> Help
                     </a>
@@ -91,7 +96,8 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="highlight-common" checked>
                                 <label class="form-check-label" for="highlight-common">
-                                    Highlight shared components
+                                    <span class="badge badge-danger">Highlight shared components</span>
+                                    <i class="fas fa-info-circle ml-1" data-toggle="tooltip" title="Components used in multiple SBOMs will be highlighted with a bright orange color and a glowing red border"></i>
                                 </label>
                             </div>
                         </div>
